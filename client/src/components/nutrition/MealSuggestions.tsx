@@ -29,25 +29,37 @@ export function MealSuggestions() {
         type: "main course",
       });
 
-      const res = await fetch(
-        `https://api.spoonacular.com/recipes/complexSearch?${params}&addNutrition=true`
-      );
-      
-      if (!res.ok) throw new Error("Failed to fetch recipes");
-      const data = await res.json();
-      
-      return data.results.map((recipe: any) => ({
-        id: recipe.id,
-        title: recipe.title,
-        image: recipe.image,
-        calories: recipe.nutrition.nutrients.find((n: any) => n.name === "Calories").amount,
-        protein: recipe.nutrition.nutrients.find((n: any) => n.name === "Protein").amount,
-        carbs: recipe.nutrition.nutrients.find((n: any) => n.name === "Carbohydrates").amount,
-        fat: recipe.nutrition.nutrients.find((n: any) => n.name === "Fat").amount,
-        readyInMinutes: recipe.readyInMinutes,
-      }));
+      try {
+        const res = await fetch(
+          `https://api.spoonacular.com/recipes/complexSearch?${params}&addNutrition=true`
+        );
+
+        if (!res.ok) {
+          if (res.status === 402) {
+            throw new Error("API quota exceeded. Please try again later.");
+          }
+          throw new Error("Failed to fetch recipes");
+        }
+
+        const data = await res.json();
+
+        return data.results.map((recipe: any) => ({
+          id: recipe.id,
+          title: recipe.title,
+          image: recipe.image,
+          calories: recipe.nutrition.nutrients.find((n: any) => n.name === "Calories").amount,
+          protein: recipe.nutrition.nutrients.find((n: any) => n.name === "Protein").amount,
+          carbs: recipe.nutrition.nutrients.find((n: any) => n.name === "Carbohydrates").amount,
+          fat: recipe.nutrition.nutrients.find((n: any) => n.name === "Fat").amount,
+          readyInMinutes: recipe.readyInMinutes,
+        }));
+      } catch (err) {
+        console.error("Recipe fetch error:", err);
+        throw new Error("Could not load meal suggestions. Please try again later.");
+      }
     },
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    retry: 1, // Only retry once to avoid hitting API limits
   });
 
   if (isLoading) {
@@ -72,7 +84,7 @@ export function MealSuggestions() {
         <CardContent>
           <Alert variant="destructive">
             <AlertDescription>
-              Could not load meal suggestions. Please try again later.
+              {error instanceof Error ? error.message : "Could not load meal suggestions. Please try again later."}
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -90,7 +102,7 @@ export function MealSuggestions() {
           {recipes?.map((recipe) => (
             <div
               key={recipe.id}
-              className="flex items-start gap-4 p-4 bg-muted rounded-lg"
+              className="flex items-start gap-4 p-4 bg-muted rounded-lg hover:bg-muted/80 transition-colors"
             >
               <img
                 src={recipe.image}
@@ -106,7 +118,7 @@ export function MealSuggestions() {
                 </div>
               </div>
               <Button variant="outline" size="sm">
-                Add to Plan
+                View Recipe
               </Button>
             </div>
           ))}
