@@ -19,41 +19,60 @@ export function MealSuggestions() {
   const { data: recipes, isLoading, error } = useQuery({
     queryKey: ["meal-suggestions"],
     queryFn: async () => {
+      const apiKey = import.meta.env.VITE_SPOONACULAR_API_KEY;
+      if (!apiKey) {
+        throw new Error("API key not found");
+      }
+
+      console.log("Fetching recipes with API key:", apiKey.substring(0, 5) + "...");
+
       const params = new URLSearchParams({
-        apiKey: import.meta.env.VITE_SPOONACULAR_API_KEY,
-        number: "5",
+        apiKey,
+        number: "3",
         maxCalories: "800",
         minProtein: "20",
         type: "main course",
+        addRecipeInformation: "true",
+        addRecipeNutrition: "true",
       });
 
       try {
-        const res = await fetch(
-          `https://api.spoonacular.com/recipes/complexSearch?${params}&addNutrition=true`
-        );
+        const url = `https://api.spoonacular.com/recipes/complexSearch?${params}`;
+        console.log("Fetching from URL:", url);
+
+        const res = await fetch(url);
+        console.log("API Response status:", res.status);
 
         if (!res.ok) {
+          const errorText = await res.text();
+          console.error("API Error:", errorText);
+
           if (res.status === 402) {
             throw new Error("API quota exceeded. Please try again later.");
           }
-          throw new Error("Failed to fetch recipes");
+          throw new Error(`Failed to fetch recipes: ${res.status} ${errorText}`);
         }
 
         const data = await res.json();
+        console.log("API Response data:", data);
+
+        if (!data.results || !Array.isArray(data.results)) {
+          throw new Error("Invalid API response format");
+        }
 
         return data.results.map((recipe: any) => ({
           id: recipe.id,
           title: recipe.title,
           image: recipe.image,
-          calories: recipe.nutrition.nutrients.find((n: any) => n.name === "Calories").amount,
-          protein: recipe.nutrition.nutrients.find((n: any) => n.name === "Protein").amount,
-          carbs: recipe.nutrition.nutrients.find((n: any) => n.name === "Carbohydrates").amount,
-          fat: recipe.nutrition.nutrients.find((n: any) => n.name === "Fat").amount,
-          readyInMinutes: recipe.readyInMinutes,
+          calories: recipe.nutrition?.nutrients?.find((n: any) => n.name === "Calories")?.amount || 0,
+          protein: recipe.nutrition?.nutrients?.find((n: any) => n.name === "Protein")?.amount || 0,
+          carbs: recipe.nutrition?.nutrients?.find((n: any) => n.name === "Carbohydrates")?.amount || 0,
+          fat: recipe.nutrition?.nutrients?.find((n: any) => n.name === "Fat")?.amount || 0,
+          readyInMinutes: recipe.readyInMinutes || 0,
         }));
       } catch (err) {
         console.error("Recipe fetch error:", err);
-        throw new Error("Could not load meal suggestions. Please try again later.");
+        throw new Error(err instanceof Error ? err.message : "Could not load meal suggestions. Please try again later.");
       }
     },
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
