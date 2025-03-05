@@ -3,6 +3,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { WorkoutCard } from "@/components/workout/WorkoutCard";
 import { NutritionTracker } from "@/components/nutrition/NutritionTracker";
 import { WeatherWidget } from "@/components/weather/WeatherWidget";
+import { ActivityTracker } from "@/components/activity/ActivityTracker";
 import { PremiumBadge } from "@/components/premium/PremiumBadge";
 import { useQuery } from "@tanstack/react-query";
 import { Workout } from "@shared/schema";
@@ -34,7 +35,11 @@ export default function HomePage() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="md:col-span-2">
+            <ActivityTracker />
+          </div>
+
           <div className="space-y-6 md:col-span-2">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-semibold">Recent Workouts</h2>
