@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { WorkoutCard } from "@/components/workout/WorkoutCard";
 import { NutritionTracker } from "@/components/nutrition/NutritionTracker";
+import { MealSuggestions } from "@/components/nutrition/MealSuggestions";
 import { WeatherWidget } from "@/components/weather/WeatherWidget";
 import { ActivityTracker } from "@/components/activity/ActivityTracker";
 import { PremiumBadge } from "@/components/premium/PremiumBadge";
@@ -64,6 +65,10 @@ export default function HomePage() {
           <div className="space-y-6">
             <WeatherWidget />
             <NutritionTracker />
+          </div>
+
+          <div className="space-y-6">
+            <MealSuggestions />
           </div>
         </div>
       </main>
