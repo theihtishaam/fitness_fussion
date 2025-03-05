@@ -40,7 +40,11 @@ export function MealSuggestions() {
         const url = `https://api.spoonacular.com/recipes/complexSearch?${params}`;
         console.log("Fetching from URL:", url);
 
-        const res = await fetch(url);
+        const res = await fetch(url, {
+          headers: {
+            'x-api-key': apiKey
+          }
+        });
         console.log("API Response status:", res.status);
 
         if (!res.ok) {
