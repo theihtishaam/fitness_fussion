@@ -4,8 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-const SPOONACULAR_API_KEY = import.meta.env.VITE_SPOONACULAR_API_KEY || "952ae66536696645f54ab99915b86fd4382dae4e";
-
 type Recipe = {
   id: number;
   title: string;
@@ -22,7 +20,7 @@ export function MealSuggestions() {
     queryKey: ["meal-suggestions"],
     queryFn: async () => {
       const params = new URLSearchParams({
-        apiKey: SPOONACULAR_API_KEY,
+        apiKey: import.meta.env.VITE_SPOONACULAR_API_KEY,
         number: "5",
         maxCalories: "800",
         minProtein: "20",
